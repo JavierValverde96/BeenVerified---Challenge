@@ -24,10 +24,11 @@ $(document).ready(function(){
 function authenticateUser(){
 	// stored username from the register form
 	var username = $("#user").val();
+	var password = $("#pass").val();
 	// try to get the user
     var user = JSON.parse(localStorage.getItem(username));
     if(user){
-    	if(user.username == username) {
+    	if(user.username == username &&  password == 'BV-API-Challenge') {
     			$('#modalText').text('You are loged in');
     	        $("#modal").modal("show");
     	        $("#form").hide();
@@ -38,10 +39,12 @@ function authenticateUser(){
     	        $(".form-inline").css('visibility','visible');
     	        $("#checkReports").css('display','block');
     	        fillTable(user);
-    	        //$("#right_item2").text('Log out');
-    	    }
+    	}else{
+    		$('#modalText').text('Error! Invalid username or password');
+    		$("#modal").modal("show");
+    	}
     }else{
-    	$('#modalText').text('Error! Username not found');
+    	$('#modalText').text('Error! Invalid username or password');
     	$("#modal").modal("show");
     }
 }
@@ -49,41 +52,52 @@ function authenticateUser(){
 function registerUser(){
 	//this function registers a new user in local storage
 	var username = $("#user").val();
-	if(username != ""){
-		var newUser = new User(username);
-	    localStorage.setItem(username,JSON.stringify(newUser));
-	    $('#modalText').html("Your account has been registered. To access your account, use the following password: <strong>" + newUser.password + "</strong>");
-    	$("#modal").modal("show");
-    	$("#form").hide();
+	var user = JSON.parse(localStorage.getItem(username));
+	if(!user){
+			if(username != ""){
+				var newUser = new User(username);
+			    localStorage.setItem(username,JSON.stringify(newUser));
+			    $('#modalText').html("Your account has been registered. To access your account, use the following password: <strong>" + newUser.password + "</strong>");
+		    	$("#modal").modal("show");
+		    	$("#form").hide();
+			}else{
+				$('#modalText').text('Missing data! Please try again');
+		    	$("#modal").modal("show");
+			}
 	}else{
-		$('#modalText').text('Missing data! Please try again');
-    	$("#modal").modal("show");
-	}
+		$('#modalText').text('There is already a registered user with that email, please try another one!');
+		$("#modal").modal("show");
+	}	
 }
 
 function loginButtonAction(){
 	//actions related to Login button
 	var action = $("#txtAction").text();
 	var username = $("#user").val();
-	switch(action){
-		case 'Sign In':
-			var password = $("#pass").val();
-			if(username !== "" && password !== ""){
-				authenticateUser();
-			}else{
-				$('#modalText').text('Missing data! Please try again');
-    			$("#modal").modal("show");
-			}
-			break;
-		case 'Sign Up':
-			if(username !== ""){
-				registerUser();
-			}else{
-				$('#modalText').text('Missing data! Please try again');
-    			$("#modal").modal("show");
-			}
-			break;
-		default: break;	
+	if(!format.test(username)){
+		$('#modalText').html('Invalid format! Please enter an <strong>email</strong>!');
+	    $("#modal").modal("show");
+	}else{
+		switch(action){
+			case 'Sign In':
+				var password = $("#pass").val();
+				if(username !== "" && password !== ""){
+					authenticateUser();
+				}else{
+					$('#modalText').text('Missing data! Please try again');
+	    			$("#modal").modal("show");
+				}
+				break;
+			case 'Sign Up':
+				if(username !== ""){
+					registerUser();
+				}else{
+					$('#modalText').text('Missing data! Please try again');
+	    			$("#modal").modal("show");
+				}
+				break;
+			default: break;	
+		}
 	}
 }
 
@@ -141,7 +155,7 @@ function eventHandlers(){
 		//gets the json object according to the specified email
 			var email = $("#email").val();
 			if(!format.test(email)){
-				$('#modalText').html('Invalid format! Please enter an<strong>email</strong>!');
+				$('#modalText').html('Invalid format! Please enter an <strong>email</strong>!');
 		    	$("#modal").modal("show");
 			}else{
 				      $.ajax({
@@ -184,12 +198,13 @@ function eventHandlers(){
 			$('#table').css('display','none');
 		}
 	});
-	$("#user").blur(function(){
-		if(!format.test($("#user").val())){
+	/*$("#user").blur(function(){
+		var user = $("#user").val();
+		if(!format.test(user) && user !== ""){
 			$('#modalText').html('Invalid format! Please enter an <strong>email</strong>!');
 	    	$("#modal").modal("show");
 		}
-	});
+	});*/
 
 }
 
