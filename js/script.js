@@ -1,4 +1,6 @@
 var dataTable;
+var format = /^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i
+
 
 $(document).ready(function(){
 	dataTable = $('.table').DataTable({
@@ -138,38 +140,38 @@ function eventHandlers(){
 	$("#btnSearch").click(function () {
 		//gets the json object according to the specified email
 			var email = $("#email").val();
-			if(email){
-	          $.ajax({
-	          	url: "https://www.beenverified.com/hk/dd/teaser/email?email=" + $("#email").val(),
-	          		data: {
-	          			query: "beer"
-	          		},
-	          		type: "GET",
-	          		dataType: "jsonp",
-	          		success: function(respuesta){
-	          			console.log("Recibes: ", respuesta);
-	          			var current_user = JSON.parse(localStorage.getItem('current_user'));
-	          			var data = new Object();
-	          			data.names = respuesta.names;
-	          			data.gender = respuesta.gender;
-	          			data.addresses = respuesta.addresses;
-	          			data.phones = respuesta.phones;
-	          			data.emails = respuesta.emails;
-	          			data.jobs = respuesta.jobs;
-	          			data.social = respuesta.social;
-	          			var r = new Report(current_user.username,$("#email").val(),data);
-	          			current_user.reports.push(r);
-	          			localStorage.setItem(current_user.username,JSON.stringify(current_user));
-	          			localStorage.setItem('current_user',JSON.stringify(current_user));
-	          			$('#modalText').text('Done! Please check your reports');
-	    				$("#modal").modal("show");
-	          			updateTable(current_user);
-	          		}
-	          	});
-	    	}else{
-	    		$('#modalText').text('Please enter an email!');
-	    		$("#modal").modal("show");
-	    	}
+			if(!format.test(email)){
+				$('#modalText').html('Invalid format! Please enter an<strong>email</strong>!');
+		    	$("#modal").modal("show");
+			}else{
+				      $.ajax({
+				      	url: "https://www.beenverified.com/hk/dd/teaser/email?email=" + $("#email").val(),
+				      		data: {
+				      			query: "beer"
+				      		},
+				      		type: "GET",
+				      		dataType: "jsonp",
+				      		success: function(respuesta){
+				      			console.log("Recibes: ", respuesta);
+				      			var current_user = JSON.parse(localStorage.getItem('current_user'));
+				      			var data = new Object();
+				      			data.names = respuesta.names;
+				      			data.gender = respuesta.gender;
+				      			data.addresses = respuesta.addresses;
+				      			data.phones = respuesta.phones;
+				      			data.emails = respuesta.emails;
+				      			data.jobs = respuesta.jobs;
+				      			data.social = respuesta.social;
+				      			var r = new Report(current_user.username,$("#email").val(),data);
+				      			current_user.reports.push(r);
+				      			localStorage.setItem(current_user.username,JSON.stringify(current_user));
+				      			localStorage.setItem('current_user',JSON.stringify(current_user));
+				      			$('#modalText').text('Done! Please check your reports');
+								$("#modal").modal("show");
+				      			updateTable(current_user);
+				      		}
+				      	});
+			}
 	});
 	$("#checkReports").click(function(){
 		var form = $("#form");
@@ -181,8 +183,12 @@ function eventHandlers(){
 		}else{
 			$('#table').css('display','none');
 		}
-		
-		
+	});
+	$("#user").blur(function(){
+		if(!format.test($("#user").val())){
+			$('#modalText').html('Invalid format! Please enter an <strong>email</strong>!');
+	    	$("#modal").modal("show");
+		}
 	});
 
 }
