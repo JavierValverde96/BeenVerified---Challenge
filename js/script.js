@@ -6,7 +6,7 @@ $(document).ready(function(){
 	dataTable = $('.table').DataTable({
     	"language": {
             "lengthMenu": "Show _MENU_ entries",
-            "zeroRecords": "No results found in your search",
+            "zeroRecords": "You haven't run any reports yet",
             "searchPlaceholder": "Search email",
             "infoEmpty": "No data available in table",
             "search": "Search Report:",
@@ -16,6 +16,7 @@ $(document).ready(function(){
     var currentUser = JSON.parse(localStorage.getItem('current_user'));
     if(currentUser){
     	$("#user").val(currentUser.username);
+    	$("#pass").val(currentUser.password);
     	authenticateUser();
     }
     eventHandlers();
@@ -198,14 +199,6 @@ function eventHandlers(){
 			$('#table').css('display','none');
 		}
 	});
-	/*$("#user").blur(function(){
-		var user = $("#user").val();
-		if(!format.test(user) && user !== ""){
-			$('#modalText').html('Invalid format! Please enter an <strong>email</strong>!');
-	    	$("#modal").modal("show");
-		}
-	});*/
-
 }
 
 function fillTable(currentUser){
@@ -213,10 +206,13 @@ function fillTable(currentUser){
 	if(currentUser.reports.length !== 0){
 		$("#tableBody").html('');
 		var email;
+		var date;
 		for(var i = 0; i < currentUser.reports.length; i++){
 			email = currentUser.reports[i].requestedUser;
+			date = currentUser.reports[i].date;
 	        dataTable.row.add( [
 	        		 email,
+	        		 date,
 	        		 '<button onclick="viewReport(this)" type="button" class="btn btn-success">View report</button>'
 	                ] ).draw();
 	    }
@@ -230,15 +226,17 @@ function updateTable(currentUser){
 		$("#tableBody").html('');
 	}
 	var email = currentUser.reports[currentUser.reports.length - 1].requestedUser;
+	var date = currentUser.reports[currentUser.reports.length - 1].date;
 	dataTable.row.add( [
 		 email,
+		 date,
 		 '<button onclick="viewReport(this)" type="button" class="btn btn-success">View report</button>'
         ] ).draw();
 }
 
 function viewReport(elem){
 	var btn = $(elem);
-	var email = btn.parent().prev().text();
+	var email = btn.parent().prev().prev().text();
 	var current_user = JSON.parse(localStorage.getItem('current_user'));
 	var nd = 'No data found';
 	for(var i = 0; i < current_user.reports.length; i++){
@@ -287,5 +285,19 @@ class Report {
     this.user = user;
     this.requestedUser = requestedUser;
     this.data = data;
+    this.date = this.getDate();
+  }
+
+  getDate(){
+  	var today = new Date();
+  	var hours = today.getHours();
+  	var minutes = today.getMinutes();
+  	var ampm = hours >= 12 ? 'pm' : 'am';
+  	hours = hours % 12;
+  	hours = hours ? hours : 12; // the hour '0' should be '12'
+  	minutes = minutes < 10 ? '0'+minutes : minutes;
+  	var strTime = hours + ':' + minutes + ' ' + ampm;
+  	var date = today.toDateString() + " - " + strTime;
+  	return date;
   }
 }
